@@ -44,7 +44,28 @@ class User {
       );
   }
 
+  cleanUserCart(actualProducts) {
+    const updatedProductSet = this.cart.items.filter((product) => {
+      const validIdx = actualProducts.findIndex((item) => {
+        return product.productId.toString() === item._id.toString();
+      });
+      if (validIdx == -1) {
+        return false;
+      }
+      return true;
+    });
+
+    const db = getDb();
+    return db
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(this._id) },
+        { $set: { cart: { items: updatedProductSet } } }
+      );
+  }
+
   getCart() {
+    let products;
     const db = getDb();
     const productIds = this.cart.items.map((i) => {
       return i.productId;
@@ -53,7 +74,11 @@ class User {
       .collection("products")
       .find({ _id: { $in: productIds } })
       .toArray()
-      .then((products) => {
+      .then((fetchedProducts) => {
+        products = fetchedProducts;
+        return this.cleanUserCart(products);
+      })
+      .then((result) => {
         return products.map((p) => {
           return {
             ...p,
@@ -104,7 +129,10 @@ class User {
 
   getOrders() {
     const db = getDb();
-    //return db.collection('orders').findAll()
+    return db
+      .collection("orders")
+      .find({ "user._id": new ObjectId(this._id) })
+      .toArray();
   }
 
   static findById(userId) {
