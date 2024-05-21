@@ -6,10 +6,10 @@ let _db;
 
 const mongoConnect = (callback) => {
   MongoClient.connect(
-    "mongodb+srv://ssugam10:sugam112@cluster0.eajhwvj.mongodb.net/shop?retryWrites=true&w=majority"
+    "mongodb+srv://ssugam10:sugam112@cluster0.eajhwvj.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0"
   )
     .then((client) => {
-      console.log("Connected!");
+      console.log("Database Connected!");
       _db = client.db(); //connection to a database is stored in this vairable
       callback(); //client object which gives us access to the database
     })
