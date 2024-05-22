@@ -13,7 +13,8 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product({ title, price, description, imageUrl });
+  const userId = req.user._id;
+  const product = new Product({ title, price, description, imageUrl, userId });
   product
     .save()
     .then((result) => {
@@ -61,12 +62,10 @@ exports.postEditProduct = (req, res, next) => {
     imageUrl: updatedImageUrl,
   })
     .then((result) => {
-      //this then block handles any success responses from product.save() promise above
       console.log("UPDATED PRODUCT!");
       res.redirect("/admin/products");
     })
     .catch((err) => {
-      //catches errors for both promises: findByPk() and save()
       console.log(err);
     });
 };
