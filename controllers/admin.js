@@ -14,7 +14,7 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const userId = req.session.user._id;
+  const userId = req.user._id;
   const product = new Product({ title, price, description, imageUrl, userId });
   product
     .save()
@@ -85,7 +85,6 @@ exports.postDeleteProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  if (!req.session.user) res.end({ message: "user not authenticated" });
   Product.find()
     // .select("title price -_id")
     // .populate("userId", "name")
