@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Product = require("./product");
 
 const Schema = mongoose.Schema;
 
@@ -8,7 +9,7 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
     type: String,
@@ -51,6 +52,8 @@ userSchema.methods.addToCart = function (product) {
   return this.save();
 };
 
+
+
 userSchema.methods.removeFromCart = function (productId) {
   const updatedCartItems = this.cart.items.filter((p) => {
     return p.productId.toString() != productId.toString();
@@ -60,9 +63,39 @@ userSchema.methods.removeFromCart = function (productId) {
   return this.save();
 };
 
-userSchema.methods.clearCart = function(){
-  this.cart = {items: []};
+
+
+userSchema.methods.clearCart = function () {
+  this.cart = { items: [] };
   return this.save();
-}
+};
+
+
+
+userSchema.methods.cleanCart = function () {
+  const currCartProductIds = this.cart.items.map((i) => {
+    return i.productId;
+  });
+
+  return Product.find({
+    _id: { $in: currCartProductIds },
+  }).then((actualProducts) => {
+    const updatedUserCartItems = this.cart.items.filter((item) => {
+      const findIdx = actualProducts.findIndex((prod) => {
+        return prod._id.toString() === item.productId.toString();
+      });
+      if (findIdx >= 0) return true;
+      return false;
+    });
+
+    const updatedCart = {
+      items: updatedUserCartItems,
+    };
+
+    this.cart = updatedCart;
+
+    return this.save();
+  });
+};
 
 module.exports = mongoose.model("User", userSchema);
