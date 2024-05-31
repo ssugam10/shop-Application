@@ -30,7 +30,7 @@ const userSchema = new Schema({
 });
 
 userSchema.methods.addToCart = function (product) {
-  console.log(this.cart);
+  //console.log(this.cart);
   const cartProductIndex = this.cart.items.findIndex((cp) => {
     return cp.productId.toString() === product._id.toString();
   });
@@ -72,7 +72,7 @@ userSchema.methods.clearCart = function () {
 
 
 
-userSchema.methods.cleanCart = function () {
+userSchema.methods.cleanCart = function () {  //clean all the products that were deleted by admin
   const currCartProductIds = this.cart.items.map((i) => {
     return i.productId;
   });
