@@ -1,18 +1,25 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
+const Mailjet = require("node-mailjet");
+
+// require("dotenv").config();
+
+// const mailjet = Mailjet.apiConnect(
+//   process.env.MJ_APIKEY_PUBLIC,
+//   process.env.MJ_APIKEY_PRIVATE
+// );
 
 exports.getLogin = (req, res, next) => {
-  let message = req.flash('error');
-  if(message.length > 0) {
+  let message = req.flash("error");
+  if (message.length > 0) {
     message = message[0];
-  }
-  else{
+  } else {
     message = null;
   }
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    errorMessage: message
+    errorMessage: message,
   });
 };
 
@@ -23,7 +30,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
-        req.flash('error','Invalid email or password.');
+        req.flash("error", "Invalid email or password.");
         return res.redirect("/login");
       }
       bcrypt
@@ -38,15 +45,13 @@ exports.postLogin = (req, res, next) => {
               res.redirect("/");
             });
           }
-          req.flash('error','Incorrect password!');
+          req.flash("error", "Incorrect password!");
           res.redirect("/login");
         })
         .catch((err) => {
           console.log(err);
           res.redirect("/login");
         });
-
-      
     })
     .catch((err) => console.log(err));
 };
@@ -60,17 +65,16 @@ exports.postLogout = (req, res, next) => {
 };
 
 exports.getSignup = (req, res, next) => {
-  let message = req.flash('error');
-  if(message.length > 0)  {
+  let message = req.flash("error");
+  if (message.length > 0) {
     message = message[0];
-  }
-  else{
-    message = null
+  } else {
+    message = null;
   }
   res.render("auth/signup", {
     path: "/signup",
     pageTitle: "Signup",
-    errorMessage: message
+    errorMessage: message,
   });
 };
 
@@ -82,7 +86,7 @@ exports.postSignup = (req, res, next) => {
   User.findOne({ email: email })
     .then((userDoc) => {
       if (userDoc) {
-        req.flash('error','Email already exists!');
+        req.flash("error", "Email already exists!");
         return res.redirect("/signup");
       }
       return bcrypt
@@ -97,6 +101,35 @@ exports.postSignup = (req, res, next) => {
         })
         .then((result) => {
           res.redirect("/login");
+          // mailjet
+          //   .post("send", { version: "v3.1" })
+          //   .request({
+          //     Messages: [
+          //       {
+          //         From: {
+          //           Email: "ssugamlm10@gmail.com",
+          //           Name: "Mailjet Pilot",
+          //         },
+          //         To: [
+          //           {
+          //             Email: "sareen_sugam@hotmail.com",
+          //             Name: "sugam sareen",
+          //           },
+          //         ],
+          //         Subject: "Your email flight plan!",
+          //         TextPart:
+          //           "Dear passenger 1, welcome to Mailjet! May the delivery force be with you!",
+          //         HTMLPart:
+          //           '<h3>Dear passenger 1, welcome to <a href="https://www.mailjet.com/">Mailjet</a>!</h3><br />May the delivery force be with you!',
+          //       },
+          //     ],
+          //   })
+          //   .then((result) => {
+          //     console.log(result.body);
+          //   })
+          //   .catch((err) => {
+          //     console.log(err.statusCode);
+          //   });
         });
     })
     .catch((err) => console.log(err));
