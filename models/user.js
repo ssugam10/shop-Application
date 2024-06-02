@@ -4,17 +4,19 @@ const Product = require("./product");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  name: {
-    type: String,
-  },
   password: {
     type: String,
     required: true,
   },
+
   email: {
     type: String,
     required: true,
   },
+  resetToken: {
+    type: String,
+  },
+  resetTokenExpiration: Date,
   cart: {
     items: [
       {
@@ -52,8 +54,6 @@ userSchema.methods.addToCart = function (product) {
   return this.save();
 };
 
-
-
 userSchema.methods.removeFromCart = function (productId) {
   const updatedCartItems = this.cart.items.filter((p) => {
     return p.productId.toString() != productId.toString();
@@ -63,16 +63,13 @@ userSchema.methods.removeFromCart = function (productId) {
   return this.save();
 };
 
-
-
 userSchema.methods.clearCart = function () {
   this.cart = { items: [] };
   return this.save();
 };
 
-
-
-userSchema.methods.cleanCart = function () {  //clean all the products that were deleted by admin
+userSchema.methods.cleanCart = function () {
+  //clean all the products that were deleted by admin
   const currCartProductIds = this.cart.items.map((i) => {
     return i.productId;
   });
