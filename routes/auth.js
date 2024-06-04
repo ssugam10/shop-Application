@@ -10,7 +10,29 @@ router.get("/login", authController.getLogin);
 
 router.get("/signup", authController.getSignup);
 
-router.post("/login", authController.postLogin);
+router.post(
+  "/login",
+  [
+    check("email")
+      .isEmail()
+      .withMessage("Please enter a valid email")
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then((user) => {
+          if (!user) {
+            return Promise.reject("No user with provided email exists!");
+          }
+        });
+      }),
+
+    body(
+      "password",
+      "Please enter a password of minimum 5 length containing only text and numbers"
+    )
+      .isLength({ min: 5 })
+      .isAlphanumeric(),
+  ],
+  authController.postLogin
+);
 
 router.post(
   "/signup",
@@ -33,7 +55,7 @@ router.post(
       }),
     body(
       "password",
-      "Please enter a value having only numbers and text and minimum length of 5"
+      "Please enter a password having only numbers and text and minimum length of 5"
     )
       .isLength({ min: 5 })
       .isAlphanumeric(),
