@@ -23,6 +23,7 @@
     "ejs": "^3.1.9",
     "express": "^4.16.3",
     "express-session": "^1.18.0",
+    "express-validator": "^7.1.0",
     "mongodb": "^6.3.0",
     "mongoose": "^8.4.0",
     "node-mailjet": "^6.0.5",
