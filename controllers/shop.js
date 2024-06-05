@@ -83,10 +83,13 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
+  let totalPrice = 0;
   req.user
     .populate("cart.items.productId")
     .then((user) => {
       const products = user.cart.items.map((i) => {
+        //console.log("product price: ",i.productId.price);
+        totalPrice += (i.quantity)*(i.productId.price);
         return { quantity: i.quantity, product: { ...i.productId._doc } }; //i.productId has alot of metadata, _doc is the field that stores all the data which is intended to be fetched
       });
       const order = new Order({
@@ -95,7 +98,9 @@ exports.postOrder = (req, res, next) => {
           userId: req.user._id,
         },
         products: products,
+        totalPrice: totalPrice
       });
+      console.log(totalPrice);
       return order.save();
     })
     .then((result) => {

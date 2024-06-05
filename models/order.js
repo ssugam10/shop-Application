@@ -23,6 +23,9 @@ const orderSchema = new Schema({
       ref: "User",
     },
   },
+  totalPrice:{
+    type:Number
+  }
 });
 
 module.exports = mongoose.model("Order", orderSchema);
