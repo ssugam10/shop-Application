@@ -4,7 +4,7 @@ const Product = require("../models/product");
 const mongoose = require("mongoose");
 
 exports.getAddProduct = (req, res, next) => {
-  res.render("admin/edit-product", {
+  res.status(200).render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
     editing: false,
