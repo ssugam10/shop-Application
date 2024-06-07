@@ -11,7 +11,9 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -25,7 +27,11 @@ exports.getProduct = (req, res, next) => {
         path: "/products",
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.getIndex = (req, res, next) => {
@@ -38,7 +44,9 @@ exports.getIndex = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -56,7 +64,11 @@ exports.getCart = (req, res, next) => {
         products: products,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.postCart = (req, res, next) => {
@@ -68,6 +80,11 @@ exports.postCart = (req, res, next) => {
     .then((result) => {
       //console.log(result);
       res.redirect("/cart");
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -79,7 +96,11 @@ exports.postCartDeleteProduct = (req, res, next) => {
       //console.log(result);
       res.redirect("/cart");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.postOrder = (req, res, next) => {
@@ -89,7 +110,7 @@ exports.postOrder = (req, res, next) => {
     .then((user) => {
       const products = user.cart.items.map((i) => {
         //console.log("product price: ",i.productId.price);
-        totalPrice += (i.quantity)*(i.productId.price);
+        totalPrice += i.quantity * i.productId.price;
         return { quantity: i.quantity, product: { ...i.productId._doc } }; //i.productId has alot of metadata, _doc is the field that stores all the data which is intended to be fetched
       });
       const order = new Order({
@@ -98,7 +119,7 @@ exports.postOrder = (req, res, next) => {
           userId: req.user._id,
         },
         products: products,
-        totalPrice: totalPrice
+        totalPrice: totalPrice,
       });
       console.log(totalPrice);
       return order.save();
@@ -109,7 +130,11 @@ exports.postOrder = (req, res, next) => {
     .then(() => {
       res.redirect("/orders");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.getOrders = (req, res, next) => {
@@ -121,5 +146,9 @@ exports.getOrders = (req, res, next) => {
         orders: orders,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
