@@ -160,43 +160,71 @@ exports.getOrders = (req, res, next) => {
 
 exports.getInvoice = (req, res, next) => {
   const orderId = req.params.orderId;
+
   Order.findById(orderId)
     .then((order) => {
       if (!order) {
-        return next(new Error("No order found!"));
+        return next(new Error("No roder found"));
       }
       if (order.user.userId.toString() !== req.user._id.toString()) {
-        return next(new Error("UnAuthorized"));
+        return next(new Error("Not Authorized"));
       }
       const invoiceName = "invoice-" + orderId + ".pdf";
       const invoicePath = path.join("data", "invoices", invoiceName);
 
-      const pdfDoc = new PDFDocument();
-      res.setHeader("Content-Type", "application/pdf");
+      //set headers
+      res.setHeader("Content-type", "application/pdf");
       res.setHeader(
-        "Content-Disposition",
+        "Content-disposition",
         'inline; filename="' + invoiceName + '"'
       );
+
+      //this code create a PDF file on the fly
+      let pdfDoc = new PDFDocument();
       pdfDoc.pipe(fs.createWriteStream(invoicePath));
       pdfDoc.pipe(res);
+      pdfDoc.fontSize(30).text("INVOICE", 20, 30);
+      pdfDoc.fontSize(30).text("LOGO", 20, 30, { align: "right" });
+      pdfDoc.text("_______________________________");
+      pdfDoc.text(" ");
+      pdfDoc.fontSize(14).text("Invoice# " + "XXXX", 20, 110);
+      pdfDoc.fontSize(14).text("Invoice Date: " + "XX-XXX-XXXX");
+      pdfDoc.fontSize(14).text("Invoice To: " + "Lorem ipsum dolor sit");
+      pdfDoc.fontSize(30).text("_______________________________", 20, 140);
+      pdfDoc.fontSize(14).text(" ");
 
-      pdfDoc.text("Hello world!");
+      pdfDoc
+        .fontSize(16)
+        .text(
+          "   ITEM                  DESCRIPTION                       Qty               AMOUNT",
+          20,
+          175
+        );
 
+      pdfDoc.fontSize(30).text("_______________________________", 20, 170);
+      let totalPrice = 0;
+      let item = 1;
+      let fsize = 14;
+      let ystart = 210;
+      let xstart = 40;
+      let yinc = fsize + 20;
+      let ycoord = ystart + (item - 1) * yinc;
+      order.products.forEach((prod) => {
+        totalPrice += prod.quantity * prod.product.price;
+
+        pdfDoc.fontSize(fsize).text(" " + item, xstart, ycoord);
+        pdfDoc.fontSize(fsize).text(prod.product.title, xstart + 120, ycoord);
+        pdfDoc.fontSize(fsize).text(prod.quantity, xstart + 330, ycoord);
+        pdfDoc.fontSize(fsize).text(prod.product.price, xstart + 430, ycoord);
+        item++;
+        ycoord = ystart + (item - 1) * fsize;
+      });
+      pdfDoc.fontSize(30).text("_______________________________", 20, ycoord);
+      pdfDoc.fontSize(20).text(" Total: $" + totalPrice, 400, ycoord + 40);
+      pdfDoc
+        .fontSize(30)
+        .text("_______________________________", 20, ycoord + 40);
       pdfDoc.end();
-      // fs.readFile(invoicePath, (err, data) => {
-      //   if (err) {
-      //     return next(err);
-      //   }
-      //   res.setHeader("Content-Type", "application/pdf");
-      //   res.setHeader(
-      //     "Content-Disposition",
-      //     'inline; filename="' + invoiceName + '"'
-      //   );
-      //   res.send(data);
-      // });
-      // const file = fs.createReadStream(invoicePath);
-
-      // file.pipe(res); //piping our readable stream into the response, which is a writable stream
     })
     .catch((err) => next(err));
 };
