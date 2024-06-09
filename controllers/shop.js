@@ -126,7 +126,7 @@ exports.postOrder = (req, res, next) => {
         products: products,
         totalPrice: totalPrice,
       });
-      console.log(totalPrice);
+      //console.log(totalPrice);
       return order.save();
     })
     .then((result) => {
@@ -202,7 +202,6 @@ exports.getInvoice = (req, res, next) => {
         );
 
       pdfDoc.fontSize(30).text("_______________________________", 20, 170);
-      let totalPrice = 0;
       let item = 1;
       let fsize = 14;
       let ystart = 210;
@@ -210,7 +209,6 @@ exports.getInvoice = (req, res, next) => {
       let yinc = fsize + 20;
       let ycoord = ystart + (item - 1) * yinc;
       order.products.forEach((prod) => {
-        totalPrice += prod.quantity * prod.product.price;
 
         pdfDoc.fontSize(fsize).text(" " + item, xstart, ycoord);
         pdfDoc.fontSize(fsize).text(prod.product.title, xstart + 120, ycoord);
@@ -220,7 +218,7 @@ exports.getInvoice = (req, res, next) => {
         ycoord = ystart + (item - 1) * fsize;
       });
       pdfDoc.fontSize(30).text("_______________________________", 20, ycoord);
-      pdfDoc.fontSize(20).text(" Total: $" + totalPrice, 400, ycoord + 40);
+      pdfDoc.fontSize(20).text(" Total: $" + order.totalPrice, 400, ycoord + 40);
       pdfDoc
         .fontSize(30)
         .text("_______________________________", 20, ycoord + 40);
