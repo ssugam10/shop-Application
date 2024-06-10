@@ -29,8 +29,8 @@ exports.getProducts = (req, res, next) => {
         hasNextPage: ITEMS_PER_PAGE * page < totalItems,
         hasPrevPage: page > 1,
         nextPage: page + 1,
-        previousPage : page - 1,
-        lastPage : Math.ceil(totalItems/ ITEMS_PER_PAGE)
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -78,8 +78,8 @@ exports.getIndex = (req, res, next) => {
         hasNextPage: ITEMS_PER_PAGE * page < totalItems,
         hasPrevPage: page > 1,
         nextPage: page + 1,
-        previousPage : page - 1,
-        lastPage : Math.ceil(totalItems/ ITEMS_PER_PAGE)
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -125,6 +125,38 @@ exports.postCart = (req, res, next) => {
       error.httpStatusCode = 500;
       return next(error);
     });
+};
+
+exports.getChangeQty = (req, res, next) => {
+  const inc = req.query.increase;
+  const prodId = req.params.productId;
+  if (inc === "true") {
+    req.user.cart.items.forEach((item, idx, arr) => {
+      if (arr[idx].productId.toString() === prodId.toString()) {
+        arr[idx].quantity++;
+      }
+    });
+  } else {
+    let index = -1;
+    req.user.cart.items.forEach((item, idx, arr) => {
+      if (arr[idx].productId.toString() === prodId.toString()) {
+        if (arr[idx].quantity > 1) {
+          arr[idx].quantity--;
+        } else {
+          index = idx;
+        }
+      }
+    });
+    if(index != -1){
+      req.user.cart.items.splice(index,1);
+    }
+  }
+  req.user
+    .save()
+    .then((result) => {
+      res.redirect("/cart");
+    })
+    .catch((err) => next(err));
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
