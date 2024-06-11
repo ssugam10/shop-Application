@@ -127,36 +127,39 @@ exports.postCart = (req, res, next) => {
     });
 };
 
-exports.getChangeQty = (req, res, next) => {
-  const inc = req.query.increase;
+exports.changeQty = (req, res, next) => {
+  const updatedVal = req.body.updatedValue;
   const prodId = req.params.productId;
-  if (inc === "true") {
+
+  if (updatedVal > 0) {
     req.user.cart.items.forEach((item, idx, arr) => {
       if (arr[idx].productId.toString() === prodId.toString()) {
-        arr[idx].quantity++;
+        arr[idx].quantity = updatedVal;
       }
     });
   } else {
-    let index = -1;
-    req.user.cart.items.forEach((item, idx, arr) => {
-      if (arr[idx].productId.toString() === prodId.toString()) {
-        if (arr[idx].quantity > 1) {
-          arr[idx].quantity--;
-        } else {
-          index = idx;
-        }
-      }
+    const updatedCart = req.user.cart.items.filter((item) => {
+      return item.productId.toString() !== prodId.toString();
     });
-    if(index != -1){
-      req.user.cart.items.splice(index,1);
-    }
+    req.user.cart.items = updatedCart;
   }
+
   req.user
     .save()
     .then((result) => {
-      res.redirect("/cart");
+      if (updatedVal > 0) {
+        res.status(200).json({ message: "Successfully changed quantity!" });
+      } else {
+        res
+          .status(200)
+          .json({ message: "Product removed. Redirecting...", redirect: true });
+      }
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      res
+        .status(500)
+        .json({ message: "Failed to update the product quantity" });
+    });
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {

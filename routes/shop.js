@@ -25,6 +25,6 @@ router.get("/orders", isAuth, shopController.getOrders);
 
 router.get("/orders/:orderId", isAuth, shopController.getInvoice);
 
-router.get("/changeQty/:productId", isAuth, shopController.getChangeQty);
+router.patch("/cart/:productId", isAuth, shopController.changeQty);
 
 module.exports = router;
