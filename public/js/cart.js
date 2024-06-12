@@ -26,15 +26,12 @@ const changeQty = (btn) => {
     .then((data) => {
       console.log(data);
       if (data.redirect) {
-        window.location.href = "/cart";
+        window.location.href = "/";
+        console.log(
+          "Since quantity was 0, product was removed and you got redirected!"
+        );
       } else {
-        if (updatedValue > 0) {
-          quantityElement.innerHTML = `Quantity: ${updatedValue}`;
-        } else {
-          console.log(
-            "Since quantity was 0, product was removed and you got redirected!"
-          );
-        }
+        quantityElement.innerHTML = `Quantity: ${updatedValue}`;
       }
     })
     .catch((err) => console.log(err));
