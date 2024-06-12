@@ -30,6 +30,7 @@
     "node-mailjet": "^6.0.5",
     "nodemailer": "^6.9.13",
     "pdfkit": "^0.15.0",
+    "stripe": "^15.10.0",
     "uuid": "^9.0.1"
   }
 }

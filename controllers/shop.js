@@ -1,6 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 
+require("dotenv").config();
+
+const stripe = require("stripe")(process.env.STRIPE_KEY);
+
 const PDFDocument = require("pdfkit");
 
 const Product = require("../models/product");
@@ -169,6 +173,129 @@ exports.postCartDeleteProduct = (req, res, next) => {
     .then((result) => {
       //console.log(result);
       res.redirect("/cart");
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
+exports.getCheckout = (req, res, next) => {
+  let products;
+  let total = 0;
+  req.user
+    .populate("cart.items.productId")
+    .then((user) => {
+      products = user.cart.items;
+      products.forEach((p) => {
+        total += +p.quantity * +p.productId.price;
+      });
+      // Old code Max video: Didn't work
+
+      // return stripe.checkout.sessions.create({
+
+      //  payment_method_types: ["card"],
+
+      //  line_items: products.map((p) => {
+
+      //      return {
+
+      //          name: p.productId.title,
+
+      //          description: p.productId.description,
+
+      //          price: p.productId.price * 100, // Price in cents
+
+      //          currency: "eur",
+
+      //          quantity: p.quantity,
+
+      //      };
+
+      //  }),
+
+      //     success_url: req.protocol + "://" + req.get("host") + "/checkout/success",// => http://localhost:3000
+
+      //     cancel_url: req.protocol + "://" + req.get("host") + "/checkout/cancel",
+
+      // });
+      return stripe.checkout.sessions.create({
+        line_items: products.map((p) => {
+          return {
+            price_data: {
+              currency: "eur",
+
+              unit_amount: parseInt(Math.ceil(p.productId.price * 100)),
+
+              product_data: {
+                name: p.productId.title,
+
+                description: p.productId.description,
+              },
+            },
+
+            quantity: p.quantity,
+          };
+        }),
+
+        mode: "payment",
+
+        success_url:
+          req.protocol + "://" + req.get("host") + "/checkout/success", // => http://localhost:3000,
+
+        cancel_url: req.protocol + "://" + req.get("host") + "/checkout/cancel",
+      });
+    })
+    .then((session) => {
+      res.render("shop/checkout", {
+        pageTitle: "Checkout",
+
+        path: "/checkout",
+
+        products: products,
+
+        totalSum: total.toFixed(2),
+
+        sessionId: session.id,
+      });
+    })
+
+    .catch((err) => {
+      const error = new Error(err);
+
+      error.httpStatusCode = 500;
+
+      return next(error);
+    });
+};
+
+exports.getCheckoutSuccess = (req, res, next) => {
+  let totalPrice = 0;
+  req.user
+    .populate("cart.items.productId")
+    .then((user) => {
+      const products = user.cart.items.map((i) => {
+        //console.log("product price: ",i.productId.price);
+        totalPrice += i.quantity * i.productId.price;
+        return { quantity: i.quantity, product: { ...i.productId._doc } }; //i.productId has alot of metadata, _doc is the field that stores all the data which is intended to be fetched
+      });
+      const order = new Order({
+        user: {
+          email: req.user.email,
+          userId: req.user._id,
+        },
+        products: products,
+        totalPrice: totalPrice,
+      });
+      //console.log(totalPrice);
+      return order.save();
+    })
+    .then((result) => {
+      return req.user.clearCart();
+    })
+    .then(() => {
+      res.redirect("/orders");
     })
     .catch((err) => {
       const error = new Error(err);
